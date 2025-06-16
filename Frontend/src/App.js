@@ -3,6 +3,7 @@ import CodeEditor from "./components/Editor";
 import axios from "axios";
 import "./App.css";
 import ReactMarkdown from 'react-markdown';
+import Loading from "./components/Loading.js"
 
 function App() {
   const [prompt, setPrompt] = useState("");
@@ -10,6 +11,7 @@ function App() {
   const [isGenerated, setIsGenerated] = useState(false);
   const [pluginHistory, setPluginHistory] = useState([]);
   const [analysis, setAnalysis] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     axios.get("http://localhost:5000/plugin-history").then((res) => {
@@ -45,7 +47,9 @@ function App() {
 
   const handleAnalyze = async (code, index) => {
     try {
+      setLoading(true);
       const res = await axios.post("http://localhost:5000/analyze", { pluginCode: code });
+      setLoading(false)
       setAnalysis((prev) => ({ ...prev, [index]: res.data.analysis }));
     } catch (err) {
       alert("Analysis failed.");
@@ -53,16 +57,19 @@ function App() {
     }
   };
 
-  const handleDownlaod = (pluginCode) => {
-    // const blob = new Blob([pluginCode], { type: "text/plain;charset=utf-8" });
-    // const url = URL.createObjectURL(blob);
-    // const a = document.createElement("a");
-    // a.href = url;
-    // a.download = `woo-plugin-${Date.now()}.php`;
-    // document.body.appendChild(a);
-    // a.click();
-    // document.body.removeChild(a);
-  }
+  const handleDownload = (pluginCode) => {
+    const blob = new Blob([pluginCode], { type: 'text/php' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'woocommerce-plugin.php';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  };
 
   return (
     <div className="App">
@@ -111,9 +118,10 @@ function App() {
             </button> : <button onClick={() => handleAnalyze(plugin.code, idx)} className="analyze_btn">
               Analyze Plugin
             </button>}
-            <button onClick={() => handleDownlaod(plugin.pluginCode)} className="download_btn">
+            <button onClick={() => handleDownload(plugin.code)} className="download_btn">
               Download Plugin
             </button>
+            {loading && <Loading />}
             <ReactMarkdown>
               {`**Analysis:** ${analysis[idx] || "No analysis yet."}`}
             </ReactMarkdown>

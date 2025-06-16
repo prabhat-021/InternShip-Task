@@ -126,6 +126,39 @@ app.post("/save", async (req, res) => {
     }
 });
 
+app.post("/analyze", async (req, res) => {
+    const { pluginCode } = req.body;
+    try {
+        const prompt = `
+You are an expert WordPress plugin security reviewer and developer.
+
+1. Explain what this plugin does.
+2. Identify any possible security risks or bad practices.
+3. Suggest any improvements in code quality or structure.
+4. Provide the output in short Points of  5-10 points , structured format.
+
+Plugin Code:
+\`\`\`php
+${pluginCode}
+\`\`\`
+    `;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response.text();
+
+        res.json({ analysis: response });
+    } catch (error) {
+        console.error("Gemini API Error:", error);
+        res.status(500).json({ error: "Failed to analyze plugin." });
+    }
+});
+
+app.get("/plugin-history", async (req, res) => {
+    const plugins = await Plugin.find();
+    console.log("Plugin History:", plugins);
+    res.json(plugins);
+});
+
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
