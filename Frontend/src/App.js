@@ -32,13 +32,13 @@ function App() {
     }
   };
 
-  const handleRename = async (id) => {
-    const newPrompt = prompt("Enter new plugin prompt:");
+  const handleRename = async (id, currentPrompt) => {
+    const newPrompt = window.prompt("Enter new plugin prompt:", currentPrompt);
     if (!newPrompt) return;
 
     try {
       setLoading(prev => ({ ...prev, [id]: true }));
-      const res = await axios.put(`http://localhost:5000/plugin/${id}/rename`, { newPrompt });
+      await axios.put(`http://localhost:5000/plugin/${id}/rename`, { newPrompt });
       alert("Renamed successfully");
       setLoading(prev => ({ ...prev, [id]: false }));
     } catch (err) {
@@ -163,7 +163,7 @@ function App() {
               Download Plugin
             </button>
             <button onClick={() => handleDelete(plugin._id)} className="delete_btn">Delete</button>
-            <button onClick={() => handleRename(plugin._id)} className="rename_btn">Rename</button>
+            <button onClick={() => handleRename(plugin._id,plugin.prompt)} className="rename_btn">Rename</button>
             {loading[idx] && <Loading />}
             <ReactMarkdown>
               {`**Analysis:** ${analysis[idx] || "No analysis yet."}`}
