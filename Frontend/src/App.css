@@ -28,3 +28,36 @@
   margin-top: 1rem;
   padding: 10px 20px;
 }
+
+.plugin_item {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #ccc;
+}
+
+.analyze_btn {
+  margin-left: 1rem;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.download_btn {
+  margin-left: 1rem;
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.analyze_btn_close{
+  margin-left: 1rem;
+  padding: 10px 20px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
