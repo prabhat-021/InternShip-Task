@@ -1,21 +1,20 @@
-/* App.css */
-.App {
-  padding: 2rem;
+.Home {
+  /* padding: 2rem; */
   font-family: sans-serif;
 }
 
-.App h1 {
+.Home h1 {
   margin: 0;
 }
 
-.App input[type="text"] {
-  width: 100%;
+.Home input[type="text"] {
+  width: 98%;
   padding: 0.5rem;
   font-size: 16px;
   margin: 1rem 0;
 }
 
-.App button {
+.Home button {
   padding: 10px 20px;
   font-size: 16px;
 }
