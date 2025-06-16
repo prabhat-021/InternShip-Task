@@ -2,8 +2,12 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 require("dotenv").config();
+const fs = require("fs");
+const path = require("path");
+const mongoose = require("mongoose");
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const Plugin = require("./models/plugin.js");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -14,28 +18,114 @@ app.use(bodyParser.json());
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-app.post("/generate", async (req, res) => {
-  const { prompt } = req.body;
+mongoose.connect(process.env.MONGO_URI).then(() => console.log("✅ MongoDB Connected"))
+    .catch(err => console.error("MongoDB Error:", err));
 
-  try {
-    const fullPrompt = `
+// app.post("/generate", async (req, res) => {
+//     const { prompt } = req.body;
+
+
+//     if (!prompt || typeof prompt !== "string") {
+//         return res.status(400).json({ error: "Invalid prompt provided." });
+//     }
+
+//     try {
+//         const fullPrompt = `
+// You are an expert WordPress/WooCommerce developer.
+// Generate a clean, secure WooCommerce plugin in PHP as a single file.
+// Respond ONLY with PHP code. 
+// Task: "${prompt}"
+//     `;
+
+//         const result = await model.generateContent(fullPrompt);
+//         const response = await result.response;
+//         const pluginCode = response.text();
+
+//         res.json({ pluginCode });
+//     } catch (error) {
+//         console.error("Gemini Error:", error);
+//         res.status(500).json({ error: "Failed to generate plugin." });
+//     }
+// });
+
+// app.post("/generateAndDownload", async (req, res) => {
+//     const { prompt } = req.body;
+
+//     try {
+//         const fullPrompt = `
+// You are an expert WordPress/WooCommerce developer.
+// Generate a clean, secure WooCommerce plugin in PHP as a single file.
+// Respond ONLY with PHP code.
+// Task: "${prompt}"
+//     `;
+
+//         const result = await model.generateContent(fullPrompt);
+//         const response = await result.response;
+//         const pluginCode = response.text();
+
+//         const fileName = `woocommerce-custom-plugin-${Date.now()}.php`;
+//         const filePath = path.join(__dirname, "plugins", fileName);
+
+//         // Make sure /plugins directory exists
+//         fs.mkdirSync(path.join(__dirname, "plugins"), { recursive: true });
+
+//         // Write the plugin code to a .php file
+//         fs.writeFileSync(filePath, pluginCode);
+
+//         // Save to DB
+//         await Plugin.create({ prompt, code: pluginCode });
+
+//         res.download(filePath, fileName);
+
+//         res.json({ pluginCode });
+//     } catch (error) {
+//         console.error("Download Error:", error);
+//         res.status(500).json({ error: "Plugin generation failed." });
+//     }
+// });
+
+app.post("/generate", async (req, res) => {
+    const { prompt } = req.body;
+
+    try {
+        const fullPrompt = `
 You are an expert WordPress/WooCommerce developer.
 Generate a clean, secure WooCommerce plugin in PHP as a single file.
 Respond ONLY with PHP code.
 Task: "${prompt}"
     `;
 
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
-    const pluginCode = response.text();
+        const result = await model.generateContent(fullPrompt);
+        const response = await result.response;
+        const pluginCode = response.text();
 
-    res.json({ pluginCode });
-  } catch (error) {
-    console.error("Gemini Error:", error);
-    res.status(500).json({ error: "Failed to generate plugin." });
-  }
+        res.json({ pluginCode });
+    } catch (err) {
+        console.error("Gemini Error:", err);
+        res.status(500).json({ error: "Generation failed." });
+    }
+});
+
+// Save modified code and download
+app.post("/save", async (req, res) => {
+    const { prompt, code } = req.body;
+
+    try {
+        const fileName = `woo-plugin-${Date.now()}.php`;
+        const filePath = path.join(__dirname, "plugins", fileName);
+
+        fs.mkdirSync(path.join(__dirname, "plugins"), { recursive: true });
+
+        fs.writeFileSync(filePath, code);
+        await Plugin.create({ prompt, code });
+
+        res.download(filePath, fileName);
+    } catch (err) {
+        console.error("Save Error:", err);
+        res.status(500).json({ error: "Failed to save plugin." });
+    }
 });
 
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+    console.log(`Server running on http://localhost:${port}`);
 });
