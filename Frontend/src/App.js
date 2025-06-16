@@ -11,20 +11,32 @@ function App() {
   const [isGenerated, setIsGenerated] = useState(false);
   const [pluginHistory, setPluginHistory] = useState([]);
   const [analysis, setAnalysis] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState({
+    generate: false,
+  });
 
   useEffect(() => {
     axios.get("http://localhost:5000/plugin-history").then((res) => {
-      setPluginHistory(res.data);
+      setPluginHistory(res.data.reverse());
     });
   }, []);
 
   const handleGenerate = async () => {
     try {
+      if (!prompt.trim()) {
+        alert("Please enter a valid prompt.");
+        return;
+      }
+
+      setLoading(prev => ({ ...prev, generate: true }));
       const response = await axios.post("http://localhost:5000/generate", { prompt });
+      setLoading(prev => ({ ...prev, generate: false }));
+
       setCode(response.data.pluginCode);
       setIsGenerated(true);
+
     } catch (err) {
+
       alert("Failed to generate plugin.");
       console.error(err);
     }
@@ -47,9 +59,9 @@ function App() {
 
   const handleAnalyze = async (code, index) => {
     try {
-      setLoading(true);
+      setLoading(prev => ({ ...prev, [index]: true }));
       const res = await axios.post("http://localhost:5000/analyze", { pluginCode: code });
-      setLoading(false)
+      setLoading(prev => ({ ...prev, [index]: false }));
       setAnalysis((prev) => ({ ...prev, [index]: res.data.analysis }));
     } catch (err) {
       alert("Analysis failed.");
@@ -83,6 +95,7 @@ function App() {
       <button onClick={handleGenerate}>
         Generate Plugin
       </button>
+      {loading.generate && <Loading />}
 
       {isGenerated && (
         <>
@@ -121,7 +134,7 @@ function App() {
             <button onClick={() => handleDownload(plugin.code)} className="download_btn">
               Download Plugin
             </button>
-            {loading && <Loading />}
+            {loading[idx] && <Loading />}
             <ReactMarkdown>
               {`**Analysis:** ${analysis[idx] || "No analysis yet."}`}
             </ReactMarkdown>

@@ -111,12 +111,12 @@ app.post("/save", async (req, res) => {
     const { prompt, code } = req.body;
 
     try {
-        const fileName = `woo-plugin-${Date.now()}.php`;
-        const filePath = path.join(__dirname, "plugins", fileName);
+        // const fileName = `woo-plugin-${Date.now()}.php`;
+        // const filePath = path.join(__dirname, "plugins", fileName);
 
-        fs.mkdirSync(path.join(__dirname, "plugins"), { recursive: true });
+        // fs.mkdirSync(path.join(__dirname, "plugins"), { recursive: true });
 
-        fs.writeFileSync(filePath, code);
+        // fs.writeFileSync(filePath, code);
         await Plugin.create({ prompt, code });
 
         res.download(filePath, fileName);
