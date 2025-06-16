@@ -119,7 +119,7 @@ app.post("/save", async (req, res) => {
         // fs.writeFileSync(filePath, code);
         await Plugin.create({ prompt, code });
 
-        res.download(filePath, fileName);
+        res.json({ suscess: true, message: "Plugin saved successfully." });
     } catch (err) {
         console.error("Save Error:", err);
         res.status(500).json({ error: "Failed to save plugin." });
@@ -158,6 +158,37 @@ app.get("/plugin-history", async (req, res) => {
     console.log("Plugin History:", plugins);
     res.json(plugins);
 });
+
+app.delete("/plugin/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const plugin = await Plugin.findByIdAndDelete(id);
+    if (!plugin) return res.status(404).json({ error: "Plugin not found" });
+    res.json({ message: "Plugin deleted successfully" });
+  } catch (err) {
+    console.error("Delete Error:", err);
+    res.status(500).json({ error: "Failed to delete plugin" });
+  }
+});
+
+app.put("/plugin/:id/rename", async (req, res) => {
+  const { id } = req.params;
+  const { newPrompt } = req.body;
+
+  try {
+    const plugin = await Plugin.findById(id);
+    if (!plugin) return res.status(404).json({ error: "Plugin not found" });
+
+    plugin.prompt = newPrompt;
+    await plugin.save();
+
+    res.json({ message: "Plugin renamed successfully", plugin });
+  } catch (err) {
+    console.error("Rename Error:", err);
+    res.status(500).json({ error: "Failed to rename plugin" });
+  }
+});
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

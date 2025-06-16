@@ -19,7 +19,33 @@ function App() {
     axios.get("http://localhost:5000/plugin-history").then((res) => {
       setPluginHistory(res.data.reverse());
     });
-  }, []);
+  }, [isGenerated, loading]);
+
+  const handleDelete = async (id) => {
+    try {
+      setLoading(prev => ({ ...prev, [id]: true }));
+      await axios.delete(`http://localhost:5000/plugin/${id}`);
+      setLoading(prev => ({ ...prev, [id]: false }));
+      alert("Deleted successfully");
+    } catch (err) {
+      alert("Delete failed");
+    }
+  };
+
+  const handleRename = async (id) => {
+    const newPrompt = prompt("Enter new plugin prompt:");
+    if (!newPrompt) return;
+
+    try {
+      setLoading(prev => ({ ...prev, [id]: true }));
+      const res = await axios.put(`http://localhost:5000/plugin/${id}/rename`, { newPrompt });
+      alert("Renamed successfully");
+      setLoading(prev => ({ ...prev, [id]: false }));
+    } catch (err) {
+      alert("Rename failed");
+    }
+  };
+
 
   const handleGenerate = async () => {
     try {
@@ -49,7 +75,9 @@ function App() {
         code,
       });
 
-      window.location.reload();
+      setIsGenerated(false);
+      setCode("");
+      alert("Plugin saved successfully! You can download it now.");
 
     } catch (err) {
       alert("Failed to save/download plugin.");
@@ -103,7 +131,7 @@ function App() {
             <CodeEditor code={code} onChange={setCode} />
           </div>
           <button className="download-button" onClick={handleSaveAndDownload}>
-            Save & Download Edited Plugin
+            Save Plugin
           </button>
         </>
       )}
@@ -134,6 +162,8 @@ function App() {
             <button onClick={() => handleDownload(plugin.code)} className="download_btn">
               Download Plugin
             </button>
+            <button onClick={() => handleDelete(plugin._id)} className="delete_btn">Delete</button>
+            <button onClick={() => handleRename(plugin._id)} className="rename_btn">Rename</button>
             {loading[idx] && <Loading />}
             <ReactMarkdown>
               {`**Analysis:** ${analysis[idx] || "No analysis yet."}`}

@@ -61,3 +61,21 @@
   border: none;
   cursor: pointer;
 }
+
+.delete_btn {
+  margin-left: 1rem;
+  padding: 10px 20px;
+  background-color: #ffc107;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.rename_btn {
+  margin-left: 1rem;
+  padding: 10px 20px;
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
