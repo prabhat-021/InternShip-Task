@@ -16,7 +16,7 @@ function Home() {
   });
 
   useEffect(() => {
-    axios.get("http://localhost:5000/plugin-history").then((res) => {
+    axios.get("http://localhost:5000/plugins/plugin-history").then((res) => {
       setPluginHistory(res.data.reverse());
     });
   }, [isGenerated, loading]);
@@ -24,7 +24,7 @@ function Home() {
   const handleDelete = async (id) => {
     try {
       setLoading(prev => ({ ...prev, [id]: true }));
-      await axios.delete(`http://localhost:5000/plugin/${id}`);
+      await axios.delete(`http://localhost:5000/plugins/${id}`);
       setLoading(prev => ({ ...prev, [id]: false }));
       alert("Deleted successfully");
     } catch (err) {
@@ -38,7 +38,7 @@ function Home() {
 
     try {
       setLoading(prev => ({ ...prev, [id]: true }));
-      await axios.put(`http://localhost:5000/plugin/${id}/rename`, { newPrompt });
+      await axios.put(`http://localhost:5000/plugins/${id}/rename`, { newPrompt });
       alert("Renamed successfully");
       setLoading(prev => ({ ...prev, [id]: false }));
     } catch (err) {
@@ -55,7 +55,7 @@ function Home() {
       }
 
       setLoading(prev => ({ ...prev, generate: true }));
-      const response = await axios.post("http://localhost:5000/generate", { prompt });
+      const response = await axios.post("http://localhost:5000/plugins/generate", { prompt });
       setLoading(prev => ({ ...prev, generate: false }));
 
       setCode(response.data.pluginCode);
@@ -70,7 +70,7 @@ function Home() {
 
   const handleSaveAndDownload = async () => {
     try {
-      await axios.post("http://localhost:5000/save", {
+      await axios.post("http://localhost:5000/plugins/save", {
         prompt,
         code,
       });
@@ -88,7 +88,7 @@ function Home() {
   const handleAnalyze = async (code, index) => {
     try {
       setLoading(prev => ({ ...prev, [index]: true }));
-      const res = await axios.post("http://localhost:5000/analyze", { pluginCode: code });
+      const res = await axios.post("http://localhost:5000/plugins/analyze", { pluginCode: code });
       setLoading(prev => ({ ...prev, [index]: false }));
       setAnalysis((prev) => ({ ...prev, [index]: res.data.analysis }));
     } catch (err) {
