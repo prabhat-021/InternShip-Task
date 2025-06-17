@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import Loading from "../components/Loading.js"
 
 function Home() {
-  const backendUrl = "https://internship-task-3ccn.onrender.com";
+  const backendUrl = "http://localhost:5000";
   const [prompt, setPrompt] = useState("");
   const [code, setCode] = useState("");
   const [isGenerated, setIsGenerated] = useState(false);
@@ -16,6 +16,7 @@ function Home() {
     generate: false,
   });
   const [currentPluginId, setCurrentPluginId] = useState(null);
+  const [edit, setEdit] = useState(false);
 
   const getCSRFToken = async () => {
     const res = await axios.get(`${backendUrl}/csrf-token`, { withCredentials: true });
@@ -77,7 +78,6 @@ function Home() {
         return;
       }
 
-      // Reset the current plugin ID since we're generating new code
       setCurrentPluginId(null);
 
       const csrfToken = await getCSRFToken();
@@ -95,6 +95,35 @@ function Home() {
 
       setCode(response.data.pluginCode);
       setIsGenerated(true);
+
+    } catch (err) {
+      alert("Failed to generate plugin.");
+      console.error(err);
+    }
+  };
+
+  const handleEditGenerate = async () => {
+    try {
+      if (!prompt.trim()) {
+        alert("Please enter a valid prompt.");
+        return;
+      }
+
+      const csrfToken = await getCSRFToken();
+
+      setLoading(prev => ({ ...prev, generate: true }));
+      const response = await axios.post(`${backendUrl}/plugins/edit-generate`, { prompt , code },
+        {
+          headers: {
+            'csrf-token': csrfToken,
+          },
+          withCredentials: true
+        }
+      );
+
+      setLoading(prev => ({ ...prev, generate: false }));
+
+      setCode(response.data.pluginCode);
 
     } catch (err) {
       alert("Failed to generate plugin.");
@@ -195,6 +224,14 @@ function Home() {
     setPrompt(plugin.prompt);
     setCurrentPluginId(plugin._id);
     setIsGenerated(false);
+    setEdit(true);
+  };
+
+  const handleCloseEditor = () => {
+    setCode(null);
+    setEdit(false);
+    setPrompt("");
+    setCurrentPluginId(null);
   };
 
   return (
@@ -205,9 +242,13 @@ function Home() {
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
       />
-      <button onClick={handleGenerate}>
-        Generate Plugin
-      </button>
+      {edit ?
+        <button onClick={handleEditGenerate}>
+          Update Plugin Code
+        </button> :
+        <button onClick={handleGenerate}>
+          Generate Plugin
+        </button>}
       {loading.generate && <Loading />}
 
       {isGenerated && (
@@ -226,7 +267,7 @@ function Home() {
           <div className="generated-content">
             <CodeEditor code={code} onChange={setCode} />
           </div>
-          <button className="download-button" onClick={() => setCode(null)}>
+          <button className="download-button" onClick={handleCloseEditor}>
             Close Editor
           </button>
           <button className="download-button" onClick={handleEdit}>

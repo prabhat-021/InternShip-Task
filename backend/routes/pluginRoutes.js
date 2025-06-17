@@ -7,10 +7,12 @@ const {
     getPluginHistory,
     deletePlugin,
     renamePlugin,
-    updatePlugin
+    updatePlugin,
+    generateEditPlugin
 } = require('../controllers/pluginController');
 
 router.post('/generate', generatePlugin);
+router.post('/edit-generate', generateEditPlugin);
 router.post('/save', savePlugin);
 router.post('/analyze', analyzePlugin);
 router.get('/plugin-history', getPluginHistory);

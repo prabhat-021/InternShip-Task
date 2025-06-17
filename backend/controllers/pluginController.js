@@ -1,4 +1,4 @@
-const Plugin = require('../models/plugin.js'); 
+const Plugin = require('../models/plugin.js');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -108,7 +108,7 @@ exports.renamePlugin = async (req, res) => {
 exports.updatePlugin = async (req, res) => {
     const { id } = req.params;
     const { code, prompt } = req.body;
-    
+
     try {
         const plugin = await Plugin.findById(id);
         if (!plugin) return res.status(404).json({ error: "Plugin not found" });
@@ -121,5 +121,31 @@ exports.updatePlugin = async (req, res) => {
     } catch (err) {
         console.error("Update Error:", err);
         res.status(500).json({ error: "Failed to update plugin" });
+    }
+};
+
+exports.generateEditPlugin = async (req, res) => {
+    const { prompt, code } = req.body;
+
+    try {
+        const fullPrompt = `
+You are an expert WordPress/WooCommerce developer.
+Refactor the following WooCommerce plugin code to match the new requirements.
+Respond ONLY with PHP code.
+Current Code:
+\`\`\`php
+${code}
+\`\`\`
+New Requirements: "${prompt}"
+    `;
+
+        const result = await model.generateContent(fullPrompt);
+        const response = await result.response;
+        const pluginCode = response.text();
+
+        res.json({ pluginCode });
+    } catch (err) {
+        console.error("Gemini Error:", err);
+        res.status(500).json({ error: "Generation failed." });
     }
 };
