@@ -32,11 +32,11 @@ function Home() {
     try {
       const csrfToken = await getCSRFToken();
       setLoading(prev => ({ ...prev, [id]: true }));
-      await axios.delete(`https://internship-task-3ccn.onrender.com/plugins/${id}`), {
+      await axios.delete(`https://internship-task-3ccn.onrender.com/plugins/${id}`, {
         headers: {
           'csrf-token': csrfToken,
         },
-      };
+      });
 
       setLoading(prev => ({ ...prev, [id]: false }));
       alert("Deleted successfully");
@@ -122,7 +122,7 @@ function Home() {
     try {
       const csrfToken = await getCSRFToken();
       setLoading(prev => ({ ...prev, [index]: true }));
-      
+
       const res = await axios.post("https://internship-task-3ccn.onrender.com/plugins/analyze", { pluginCode: code },
         {
           headers: { 'csrf-token': csrfToken },

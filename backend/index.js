@@ -7,11 +7,24 @@ const csrf = require("csurf");
 const cookieParser = require("cookie-parser");
 const pluginRoutes = require('./routes/pluginRoutes.js');
 const userRoutes = require('./routes/userRoutes.js');
-
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const port = process.env.PORT || 5000;
 db();
+
+const limiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 100,
+    message: {
+        status: 429,
+        error: "Too many requests. Please try again later.",
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+app.use(limiter);
 
 const allowedOrigins = [
     'http://localhost:3000',
