@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser");
 const pluginRoutes = require('./routes/pluginRoutes.js');
 const userRoutes = require('./routes/userRoutes.js');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -25,6 +26,7 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+app.use(helmet());
 
 const allowedOrigins = [
     'http://localhost:3000',
@@ -34,7 +36,7 @@ const allowedOrigins = [
 const corsOptions = {
     origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
+            callback(null, origin); 
         } else {
             callback(new Error('Not allowed by CORS'));
         }

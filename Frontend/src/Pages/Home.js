@@ -15,8 +15,6 @@ function Home() {
     generate: false,
   });
 
-  axios.defaults.withCredentials = true;
-
   const getCSRFToken = async () => {
     const res = await axios.get("https://internship-task-3ccn.onrender.com/csrf-token");
     return res.data.csrfToken;
@@ -25,7 +23,7 @@ function Home() {
   useEffect(() => {
     axios.get("https://internship-task-3ccn.onrender.com/plugins/plugin-history").then((res) => {
       setPluginHistory(res.data.reverse());
-    });
+    }, { withCredentials: true });
   }, [isGenerated, loading]);
 
   const handleDelete = async (id) => {
@@ -36,7 +34,7 @@ function Home() {
         headers: {
           'csrf-token': csrfToken,
         },
-      });
+      }, { withCredentials: true });
 
       setLoading(prev => ({ ...prev, [id]: false }));
       alert("Deleted successfully");
@@ -57,7 +55,7 @@ function Home() {
           headers: {
             'csrf-token': csrfToken,
           },
-        }
+        }, { withCredentials: true }
       );
       alert("Renamed successfully");
       setLoading(prev => ({ ...prev, [id]: false }));
@@ -82,7 +80,7 @@ function Home() {
           headers: {
             'csrf-token': csrfToken,
           },
-        }
+        }, { withCredentials: true }
       );
       setLoading(prev => ({ ...prev, generate: false }));
 
@@ -105,7 +103,7 @@ function Home() {
         code,
         {
           headers: { 'csrf-token': csrfToken },
-        },
+        }, { withCredentials: true }
       );
 
       setIsGenerated(false);
@@ -126,9 +124,9 @@ function Home() {
       const res = await axios.post("https://internship-task-3ccn.onrender.com/plugins/analyze", { pluginCode: code },
         {
           headers: { 'csrf-token': csrfToken },
-        }
+        }, { withCredentials: true }
       );
-  
+
       setLoading(prev => ({ ...prev, [index]: false }));
       setAnalysis((prev) => ({ ...prev, [index]: res.data.analysis }));
     } catch (err) {
