@@ -6,6 +6,11 @@ A powerful tool that leverages AI to automatically generate custom WooCommerce p
 
 WooPlugin LLM Agent is a web application that allows WordPress/WooCommerce developers to quickly generate custom plugins by simply describing what they need in plain English. The application uses Google's Gemini AI to transform text prompts into functional WooCommerce plugin code.
 
+## Live Demo
+
+- **Frontend**: [https://llmagent.vercel.app/](https://llmagent.vercel.app/)
+- **Backend API**: [https://internship-task-3ccn.onrender.com](https://internship-task-3ccn.onrender.com)
+
 ## Features Status
 
 | Feature                                  | Status    |
@@ -159,6 +164,13 @@ wooplugin-llm-agent/
    ```
 
 3. Open your browser and navigate to `http://localhost:3000`
+
+## Deployment
+
+The application is currently deployed with:
+- Frontend hosted on [Vercel](https://vercel.com)
+- Backend hosted on [Render](https://render.com)
+- Database hosted on [MongoDB Atlas](https://www.mongodb.com/atlas/database)
 
 ## Development Features
 
