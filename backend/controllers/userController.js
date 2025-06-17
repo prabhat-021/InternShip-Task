@@ -1,3 +1,9 @@
+const userModel = require('../models/userModel');
+const VerificationToken = require('../models/verificationTokenModel');
+const { generateOTP, transporter, generateEmailTemplate, plainEmailTemplate } = require('../utils/mail');
+const { generateToken } = require('../utils/generateToken');
+const validator = require('validator');
+
 const registerUser = async (req, res) => {
 
     try {
