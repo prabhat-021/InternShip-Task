@@ -26,6 +26,7 @@ WooPlugin LLM Agent is a web application that allows WordPress/WooCommerce devel
 | 📤 Plugin download as PHP file           | ✅ Working |
 | ✏️ Plugin renaming                       | ✅ Working |
 | 🗑️ Plugin deletion                       | ✅ Working |
+| 🔄 Edit existing plugins                 | ✅ Working |
 
 ## Technology Stack
 
@@ -93,6 +94,7 @@ wooplugin-llm-agent/
 | `/plugins/plugin-history` | GET | Retrieves saved plugin history                 |
 | `/plugins/:id`       | DELETE | Deletes a specific plugin                        |
 | `/plugins/:id/rename`| PUT    | Renames a specific plugin                        |
+| `/plugins/:id`       | PUT    | Updates an existing plugin's code and prompt     |
 
 ## Key Functions
 
@@ -103,6 +105,8 @@ wooplugin-llm-agent/
 - `analyzePlugin()`: Sends plugin code to Gemini for security and quality analysis
 - `deletePlugin()`: Removes plugins from the database
 - `renamePlugin()`: Updates plugin prompt/name
+- `updatePlugin()`: Updates an existing plugin's code and prompt
+- `generateEditPlugin()`: Regenerates plugin code based on existing code and new requirements
 
 ### Frontend
 - `handleGenerate()`: Sends prompt to backend and processes response
@@ -111,6 +115,9 @@ wooplugin-llm-agent/
 - `handleDownload()`: Creates downloadable PHP file from plugin code
 - `handleDelete()`: Removes plugins from history
 - `handleRename()`: Updates plugin names
+- `handleLoadPlugin()`: Loads an existing plugin into the editor for editing
+- `handleEdit()`: Updates an existing plugin with edited code
+- `handleEditGenerate()`: Sends existing code with new prompt to regenerate plugin code
 
 ## Getting Started
 
@@ -186,6 +193,9 @@ The application is currently deployed with:
 3. Review and modify the generated code in the editor if needed
 4. Click "Save Plugin" to store it in your history
 5. Access your plugin history to view, analyze, or modify previously created plugins
+6. Click "Load in Editor" to edit an existing plugin
+7. Make changes to the code or update the prompt and regenerate
+8. Click "Update Plugin" to save changes to the existing plugin
 
 ## Example Prompts
 
