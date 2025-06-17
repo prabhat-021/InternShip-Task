@@ -15,6 +15,13 @@ function Home() {
     generate: false,
   });
 
+  axios.defaults.withCredentials = true;
+
+  const getCSRFToken = async () => {
+    const res = await axios.get("https://internship-task-3ccn.onrender.com/csrf-token");
+    return res.data.csrfToken;
+  };
+
   useEffect(() => {
     axios.get("https://internship-task-3ccn.onrender.com/plugins/plugin-history").then((res) => {
       setPluginHistory(res.data.reverse());
@@ -23,8 +30,14 @@ function Home() {
 
   const handleDelete = async (id) => {
     try {
+      const csrfToken = await getCSRFToken();
       setLoading(prev => ({ ...prev, [id]: true }));
-      await axios.delete(`https://internship-task-3ccn.onrender.com/plugins/${id}`);
+      await axios.delete(`https://internship-task-3ccn.onrender.com/plugins/${id}`), {
+        headers: {
+          'csrf-token': csrfToken,
+        },
+      };
+
       setLoading(prev => ({ ...prev, [id]: false }));
       alert("Deleted successfully");
     } catch (err) {
@@ -37,8 +50,15 @@ function Home() {
     if (!newPrompt) return;
 
     try {
+      const csrfToken = await getCSRFToken();
       setLoading(prev => ({ ...prev, [id]: true }));
-      await axios.put(`https://internship-task-3ccn.onrender.com/plugins/${id}/rename`, { newPrompt });
+      await axios.put(`https://internship-task-3ccn.onrender.com/plugins/${id}/rename`, { newPrompt },
+        {
+          headers: {
+            'csrf-token': csrfToken,
+          },
+        }
+      );
       alert("Renamed successfully");
       setLoading(prev => ({ ...prev, [id]: false }));
     } catch (err) {
@@ -54,8 +74,16 @@ function Home() {
         return;
       }
 
+      const csrfToken = await getCSRFToken();
+
       setLoading(prev => ({ ...prev, generate: true }));
-      const response = await axios.post("https://internship-task-3ccn.onrender.com/plugins/generate", { prompt });
+      const response = await axios.post("https://internship-task-3ccn.onrender.com/plugins/generate", { prompt },
+        {
+          headers: {
+            'csrf-token': csrfToken,
+          },
+        }
+      );
       setLoading(prev => ({ ...prev, generate: false }));
 
       setCode(response.data.pluginCode);
@@ -70,10 +98,15 @@ function Home() {
 
   const handleSaveAndDownload = async () => {
     try {
-      await axios.post("https://internship-task-3ccn.onrender.com/plugins/save", {
+
+      const csrfToken = await getCSRFToken();
+      await axios.post("https://internship-task-3ccn.onrender.com/plugins/save",
         prompt,
         code,
-      });
+        {
+          headers: { 'csrf-token': csrfToken },
+        },
+      );
 
       setIsGenerated(false);
       setCode("");
@@ -87,8 +120,15 @@ function Home() {
 
   const handleAnalyze = async (code, index) => {
     try {
+      const csrfToken = await getCSRFToken();
       setLoading(prev => ({ ...prev, [index]: true }));
-      const res = await axios.post("https://internship-task-3ccn.onrender.com/plugins/analyze", { pluginCode: code });
+      
+      const res = await axios.post("https://internship-task-3ccn.onrender.com/plugins/analyze", { pluginCode: code },
+        {
+          headers: { 'csrf-token': csrfToken },
+        }
+      );
+  
       setLoading(prev => ({ ...prev, [index]: false }));
       setAnalysis((prev) => ({ ...prev, [index]: res.data.analysis }));
     } catch (err) {
@@ -110,6 +150,10 @@ function Home() {
       URL.revokeObjectURL(url);
     }, 100);
   };
+
+  const handleEdit = () => {
+
+  }
 
   return (
     <div className="Home">
@@ -142,6 +186,9 @@ function Home() {
           </div>
           <button className="download-button" onClick={() => setCode(null)}>
             Close Editor
+          </button>
+          <button className="download-button" onClick={handleEdit}>
+            Update Code
           </button>
         </>
       )}
