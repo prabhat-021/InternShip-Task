@@ -18,13 +18,18 @@ WooPlugin LLM Agent is a web application that allows WordPress/WooCommerce devel
 | 📋 Plugin history viewing                | ✅ Working |
 | 🔄 Real-time code editing                | ✅ Working |
 | 🔒 Secure API integration                | ✅ Working |
+| 📤 Plugin download as PHP file           | ✅ Working |
+| ✏️ Plugin renaming                       | ✅ Working |
+| 🗑️ Plugin deletion                       | ✅ Working |
 
 ## Technology Stack
 
 ### Frontend
 - **React.js**: Core UI framework
 - **Axios**: HTTP client for API requests
-- **CodeEditor**: Custom component for code editing and syntax highlighting
+- **Monaco Editor**: Code editor for syntax highlighting and editing
+- **React Router**: For application routing
+- **React Markdown**: For rendering markdown content
 
 ### Backend
 - **Node.js**: JavaScript runtime
@@ -41,20 +46,32 @@ WooPlugin LLM Agent is a web application that allows WordPress/WooCommerce devel
 wooplugin-llm-agent/
 ├── Frontend/                      # React frontend application
 │   ├── public/                    # Public assets
+│   │   ├── index.html             # Main HTML file
+│   │   ├── manifest.json          # Web app manifest
+│   │   └── robots.txt             # Robots configuration
 │   ├── src/                       # Source files
 │   │   ├── components/            # React components
-│   │   │   ├── CodeEditor.js      # Monaco code editor component
-│   │   │   └── Loading.js         # Loading indicator component
+│   │   │   ├── Editor.js          # Monaco code editor component
+│   │   │   ├── Loading.js         # Loading indicator component
+│   │   │   └── Navbar/            # Navigation components
+│   │   ├── Pages/                 # Page components
+│   │   │   ├── Home.js            # Main plugin generation page
+│   │   │   ├── About.js           # About page with markdown content
+│   │   │   └── about.css          # Styling for about page
 │   │   ├── App.js                 # Main application component
-│   │   ├── index.js               # Application entry point
-│   │   └── styles.css             # Application styles
+│   │   └── index.js               # Application entry point
 │   ├── package.json               # Frontend dependencies
 │   └── README.md                  # Frontend documentation
 │
 ├── backend/                       # Node.js backend application
+│   ├── controllers/               # API controllers
+│   │   └── pluginController.js    # Plugin generation and management
 │   ├── models/                    # Mongoose data models
 │   │   └── plugin.js              # Plugin schema and model
-│   ├── index.js                   # Main server file and API endpoints
+│   ├── routes/                    # API routes
+│   │   └── pluginRoutes.js        # Plugin-related endpoints
+│   ├── utils/                     # Utility functions
+│   ├── index.js                   # Main server file
 │   ├── package.json               # Backend dependencies
 │   └── .env                       # Environment variables (not in repo)
 │
@@ -65,10 +82,12 @@ wooplugin-llm-agent/
 
 | Endpoint             | Method | Description                                      |
 | -------------------- | ------ | ------------------------------------------------ |
-| `/generate`          | POST   | Generates plugin code from text prompt           |
-| `/save`              | POST   | Saves plugin code to MongoDB                     |
-| `/analyze`           | POST   | Analyzes plugin code for security and quality    |
-| `/plugin-history`    | GET    | Retrieves saved plugin history                   |
+| `/plugins/generate`  | POST   | Generates plugin code from text prompt           |
+| `/plugins/save`      | POST   | Saves plugin code to MongoDB                     |
+| `/plugins/analyze`   | POST   | Analyzes plugin code for security and quality    |
+| `/plugins/plugin-history` | GET | Retrieves saved plugin history                 |
+| `/plugins/:id`       | DELETE | Deletes a specific plugin                        |
+| `/plugins/:id/rename`| PUT    | Renames a specific plugin                        |
 
 ## Key Functions
 
@@ -76,13 +95,17 @@ wooplugin-llm-agent/
 - `model.generateContent()`: Interfaces with Gemini AI to generate plugin code
 - `Plugin.create()`: Saves plugin data to MongoDB
 - `Plugin.find()`: Retrieves plugin history from database
-- Express middleware for request handling and routing
+- `analyzePlugin()`: Sends plugin code to Gemini for security and quality analysis
+- `deletePlugin()`: Removes plugins from the database
+- `renamePlugin()`: Updates plugin prompt/name
 
 ### Frontend
 - `handleGenerate()`: Sends prompt to backend and processes response
 - `handleSaveAndDownload()`: Saves edited plugin to database
-- `CodeEditor`: Component for displaying and editing code
-- State management for application flow
+- `handleAnalyze()`: Requests AI analysis of plugin code
+- `handleDownload()`: Creates downloadable PHP file from plugin code
+- `handleDelete()`: Removes plugins from history
+- `handleRename()`: Updates plugin names
 
 ## Getting Started
 
