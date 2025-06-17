@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import Loading from "../components/Loading.js"
 
 function Home() {
+  const backendUrl = "https://internship-task-3ccn.onrender.com";
   const [prompt, setPrompt] = useState("");
   const [code, setCode] = useState("");
   const [isGenerated, setIsGenerated] = useState(false);
@@ -14,27 +15,31 @@ function Home() {
   const [loading, setLoading] = useState({
     generate: false,
   });
+  const [currentPluginId, setCurrentPluginId] = useState(null);
 
   const getCSRFToken = async () => {
-    const res = await axios.get("https://internship-task-3ccn.onrender.com/csrf-token");
+    const res = await axios.get(`${backendUrl}/csrf-token`, { withCredentials: true });
     return res.data.csrfToken;
   };
 
   useEffect(() => {
-    axios.get("https://internship-task-3ccn.onrender.com/plugins/plugin-history").then((res) => {
+    axios.get(`${backendUrl}/plugins/plugin-history`, {
+      headers: { 'csrf-token': getCSRFToken() }, withCredentials: true
+    }).then((res) => {
       setPluginHistory(res.data.reverse());
-    }, { withCredentials: true });
+    });
   }, [isGenerated, loading]);
 
   const handleDelete = async (id) => {
     try {
       const csrfToken = await getCSRFToken();
       setLoading(prev => ({ ...prev, [id]: true }));
-      await axios.delete(`https://internship-task-3ccn.onrender.com/plugins/${id}`, {
+      await axios.delete(`${backendUrl}/plugins/${id}`, {
         headers: {
           'csrf-token': csrfToken,
         },
-      }, { withCredentials: true });
+        withCredentials: true
+      });
 
       setLoading(prev => ({ ...prev, [id]: false }));
       alert("Deleted successfully");
@@ -50,12 +55,13 @@ function Home() {
     try {
       const csrfToken = await getCSRFToken();
       setLoading(prev => ({ ...prev, [id]: true }));
-      await axios.put(`https://internship-task-3ccn.onrender.com/plugins/${id}/rename`, { newPrompt },
+      await axios.put(`${backendUrl}/plugins/${id}/rename`, { newPrompt },
         {
           headers: {
             'csrf-token': csrfToken,
           },
-        }, { withCredentials: true }
+          withCredentials: true
+        }
       );
       alert("Renamed successfully");
       setLoading(prev => ({ ...prev, [id]: false }));
@@ -64,7 +70,6 @@ function Home() {
     }
   };
 
-
   const handleGenerate = async () => {
     try {
       if (!prompt.trim()) {
@@ -72,15 +77,19 @@ function Home() {
         return;
       }
 
+      // Reset the current plugin ID since we're generating new code
+      setCurrentPluginId(null);
+
       const csrfToken = await getCSRFToken();
 
       setLoading(prev => ({ ...prev, generate: true }));
-      const response = await axios.post("https://internship-task-3ccn.onrender.com/plugins/generate", { prompt },
+      const response = await axios.post(`${backendUrl}/plugins/generate`, { prompt },
         {
           headers: {
             'csrf-token': csrfToken,
           },
-        }, { withCredentials: true }
+          withCredentials: true
+        }
       );
       setLoading(prev => ({ ...prev, generate: false }));
 
@@ -88,7 +97,6 @@ function Home() {
       setIsGenerated(true);
 
     } catch (err) {
-
       alert("Failed to generate plugin.");
       console.error(err);
     }
@@ -96,18 +104,18 @@ function Home() {
 
   const handleSaveAndDownload = async () => {
     try {
-
       const csrfToken = await getCSRFToken();
-      await axios.post("https://internship-task-3ccn.onrender.com/plugins/save",
-        prompt,
-        code,
+      await axios.post(`${backendUrl}/plugins/save`,
+        { prompt, code },
         {
           headers: { 'csrf-token': csrfToken },
-        }, { withCredentials: true }
+          withCredentials: true
+        },
       );
 
       setIsGenerated(false);
       setCode("");
+      setCurrentPluginId(null);
       alert("Plugin saved successfully! You can download it now.");
 
     } catch (err) {
@@ -121,10 +129,11 @@ function Home() {
       const csrfToken = await getCSRFToken();
       setLoading(prev => ({ ...prev, [index]: true }));
 
-      const res = await axios.post("https://internship-task-3ccn.onrender.com/plugins/analyze", { pluginCode: code },
+      const res = await axios.post(`${backendUrl}/plugins/analyze`, { pluginCode: code },
         {
           headers: { 'csrf-token': csrfToken },
-        }, { withCredentials: true }
+          withCredentials: true
+        }
       );
 
       setLoading(prev => ({ ...prev, [index]: false }));
@@ -149,9 +158,44 @@ function Home() {
     }, 100);
   };
 
-  const handleEdit = () => {
+  const handleEdit = async () => {
+    try {
+      if (!code.trim()) {
+        alert("No code to update.");
+        return;
+      }
 
+      if (!currentPluginId) {
+        alert("Cannot update: No plugin selected from history.");
+        return;
+      }
+
+      const csrfToken = await getCSRFToken();
+      setLoading(prev => ({ ...prev, edit: true }));
+
+      await axios.put(`${backendUrl}/plugins/update/${currentPluginId}`,
+        { code, prompt },
+        {
+          headers: { 'csrf-token': csrfToken },
+          withCredentials: true
+        },
+      );
+
+      setLoading(prev => ({ ...prev, edit: false }));
+      alert("Plugin updated successfully!");
+
+    } catch (err) {
+      alert("Failed to update plugin.");
+      console.error(err);
+    }
   }
+
+  const handleLoadPlugin = (plugin) => {
+    setCode(plugin.code);
+    setPrompt(plugin.prompt);
+    setCurrentPluginId(plugin._id);
+    setIsGenerated(false);
+  };
 
   return (
     <div className="Home">
@@ -197,7 +241,7 @@ function Home() {
           <li key={idx} className="plugin_item">
             <p><strong>Prompt:</strong> {plugin.prompt}</p>
             <p><strong>Date:</strong> {new Date(plugin.createdAt).toLocaleString()}</p>
-            <button onClick={() => setCode(plugin.code)}>Load in Editor</button>
+            <button onClick={() => handleLoadPlugin(plugin)}>Load in Editor</button>
             {analysis[idx] ? <button onClick={() => setAnalysis(analysis[idx] = "")} className="analyze_btn_close">
               Close Analyze Plugin
             </button> : <button onClick={() => handleAnalyze(plugin.code, idx)} className="analyze_btn">

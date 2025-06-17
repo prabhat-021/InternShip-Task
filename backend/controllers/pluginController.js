@@ -104,3 +104,22 @@ exports.renamePlugin = async (req, res) => {
         res.status(500).json({ error: "Failed to rename plugin" });
     }
 };
+
+exports.updatePlugin = async (req, res) => {
+    const { id } = req.params;
+    const { code, prompt } = req.body;
+    
+    try {
+        const plugin = await Plugin.findById(id);
+        if (!plugin) return res.status(404).json({ error: "Plugin not found" });
+
+        plugin.code = code;
+        if (prompt) plugin.prompt = prompt;
+        await plugin.save();
+
+        res.json({ message: "Plugin updated successfully", plugin });
+    } catch (err) {
+        console.error("Update Error:", err);
+        res.status(500).json({ error: "Failed to update plugin" });
+    }
+};
