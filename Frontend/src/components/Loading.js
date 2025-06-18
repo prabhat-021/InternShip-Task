@@ -1,9 +1,14 @@
-const Loading = () => {
+const Loading = ({ message = "Loading" }) => {
   return (
-    <div className="flex items-center justify-center w-full min-h-[60vh]">
-      <div className="w-24 h-24 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+    <div className="w-full py-12 flex flex-col items-center justify-center font-mono text-gray-700 dark:text-gray-200">
+      <div className="text-xl flex items-center gap-2">
+        <span className="animate-bounce">⚙️</span>
+        <span>{message}</span>
+        <span className="animate-ping text-blue-500">.</span>
+        <span className="animate-pulse text-blue-500">.</span>
+        <span className="animate-bounce text-blue-500">.</span>
+      </div>
     </div>
   );
 };
-
 export default Loading;

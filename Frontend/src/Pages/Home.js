@@ -15,7 +15,7 @@ function Home() {
     generate: false,
   });
   const [currentPluginId, setCurrentPluginId] = useState(null);
-  const [edit, setEdit] = useState(false); // Keep this state for tracking edit mode
+  const [edit, setEdit] = useState(false);
 
   const getCSRFToken = async () => {
     const res = await axios.get(`${backendUrl}/csrf-token`, { withCredentials: true });
@@ -112,7 +112,7 @@ function Home() {
       const csrfToken = await getCSRFToken();
 
       setLoading(prev => ({ ...prev, generate: true }));
-      const response = await axios.post(`${backendUrl}/plugins/edit-generate`, { prompt , code },
+      const response = await axios.post(`${backendUrl}/plugins/edit-generate`, { prompt, code },
         {
           headers: {
             'csrf-token': csrfToken,
@@ -236,120 +236,79 @@ function Home() {
   };
 
   return (
-    <div className="p-4 w-full mx-auto bg-white rounded-lg shadow-md">
-      <input
-        type="text"
-        placeholder="Enter plugin request"
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        className="w-full p-2 mb-4 border border-gray-300 rounded"
-      />
-      {edit ?
-        <button 
-          onClick={handleEditGenerate}
-          className="bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded mb-4"
-        >
-          Update Plugin Code
-        </button> :
-        <button 
-          onClick={handleGenerate}
-          className="bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded mb-4"
-        >
-          Generate Plugin
-        </button>}
-      {loading.generate && <Loading />}
+    <div className="flex h-screen font-sans">
+      <aside className="w-1/4 bg-gray-100 border-r overflow-y-auto p-4">
+        <h2 className="text-xl font-semibold mb-4">🕘 Plugin History</h2>
+        <ul className="space-y-4">
+          {pluginHistory.map((plugin, idx) => (
+            <li key={idx} className="bg-white rounded shadow p-3 border">
+              <p className="text-sm font-medium">🔖 {plugin.prompt}</p>
+              <p className="text-xs text-gray-500 mb-2">{new Date(plugin.createdAt).toLocaleString()}</p>
+              <div className="flex flex-wrap gap-1 text-xs">
+                <button onClick={() => handleLoadPlugin(plugin)} className="text-blue-600 underline">Load</button>
+                <button onClick={() => handleDownload(plugin.code)} className="text-green-600 underline">Download</button>
+                <button onClick={() => handleDelete(plugin._id)} className="text-red-500 underline">Delete</button>
+                <button onClick={() => handleRename(plugin._id, plugin.prompt)} className="text-yellow-600 underline">Rename</button>
+                {analysis[idx] ? (
+                  <button onClick={() => setAnalysis((prev) => ({ ...prev, [idx]: "" }))} className="text-gray-600 underline">Close</button>
+                ) : (
+                  <button onClick={() => handleAnalyze(plugin.code, idx)} className="text-purple-600 underline">Analyze</button>
+                )}
+              </div>
+              {loading[idx] && <Loading message="🔍 Analyzing plugin for bugs and security issues..." />}
+              {analysis[idx] && (
+                <ReactMarkdown>{`**Analysis:**\n${analysis[idx]}`}</ReactMarkdown>
+              )}
+            </li>
+          ))}
+        </ul>
+      </aside>
+      <main className="flex-1 flex flex-col p-4 overflow-hidden">
+        <div className="flex items-center gap-4 mb-4">
+          <input
+            type="text"
+            placeholder="Enter plugin request..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            className="flex-1 p-2 border border-gray-300 rounded"
+          />
+          {edit ? (
+            <button onClick={handleEditGenerate} className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+              Edit & Generate
+            </button>
+          ) : (
+            <button onClick={handleGenerate} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              Generate Plugin
+            </button>
+          )}
+          {loading.generate && <Loading message="🧠 Processing prompt and writing plugin code..." />}
+        </div>
+        <div className="flex gap-4">
+          {isGenerated && (
+            <button onClick={handleSaveAndDownload} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+              Save & Download
+            </button>
+          )}
+          {!isGenerated && code && (
+            <>
+              <button onClick={handleEdit} className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                Update Plugin
+              </button>
+              <button onClick={handleCloseEditor} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                Close Editor
+              </button>
+            </>
+          )}
+        </div>
+        <div className="flex-1 border rounded overflow-hidden mb-4" >
+          <CodeEditor code={code} onChange={setCode} />
+        </div>
 
-      {isGenerated && (
-        <>
-          <div className="border border-gray-300 rounded p-2 mb-4">
-            <CodeEditor code={code} onChange={setCode} />
-          </div>
-          <button 
-            className="bg-purple-500 hover:bg-purple-600 text-white py-3 px-6 rounded mb-4" 
-            onClick={handleSaveAndDownload}
-          >
-            Save Plugin
-          </button>
-        </>
-      )}
 
-      {!isGenerated && code && (
-        <>
-          <div className="border border-gray-300 rounded p-2 mb-4">
-            <CodeEditor code={code} onChange={setCode} />
-          </div>
-          <button 
-            className="bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded mr-2 mb-4" 
-            onClick={handleCloseEditor}
-          >
-            Close Editor
-          </button>
-          <button 
-            className="bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-6 rounded mb-4" 
-            onClick={handleEdit}
-          >
-            Update Code
-          </button>
-        </>
-      )}
-
-      <h2 className="text-xl font-bold mt-8 mb-4">🕘 Plugin History</h2>
-      <ul className="space-y-4">
-        {pluginHistory.map((plugin, idx) => (
-          <li key={idx} className="border border-gray-200 rounded p-4 hover:shadow-md">
-            <p className="mb-2"><strong>Prompt:</strong> {plugin.prompt}</p>
-            <p className="mb-4"><strong>Date:</strong> {new Date(plugin.createdAt).toLocaleString()}</p>
-            <div className="flex flex-wrap gap-2 mb-4">
-              <button 
-                onClick={() => handleLoadPlugin(plugin)}
-                className="bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded text-m"
-              >
-                Load in Editor
-              </button>
-              {analysis[idx] ? 
-                <button 
-                  onClick={() => setAnalysis(prev => ({...prev, [idx]: ""}))} 
-                  className="bg-red-500 hover:bg-red-600 text-white py-3 px-6 rounded text-sm"
-                >
-                  Close Analyze Plugin
-                </button> : 
-                <button 
-                  onClick={() => handleAnalyze(plugin.code, idx)} 
-                  className="bg-purple-500 hover:bg-purple-600 text-white py-3 px-6 rounded text-sm"
-                >
-                  Analyze Plugin
-                </button>
-              }
-              <button 
-                onClick={() => handleDownload(plugin.code)} 
-                className="bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded text-sm"
-              >
-                Download Plugin
-              </button>
-              <button 
-                onClick={() => handleDelete(plugin._id)} 
-                className="bg-red-500 hover:bg-red-600 text-white py-3 px-6 rounded text-sm"
-              >
-                Delete
-              </button>
-              <button 
-                onClick={() => handleRename(plugin._id, plugin.prompt)} 
-                className="bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-6 rounded text-sm"
-              >
-                Rename
-              </button>
-            </div>
-            {loading[idx] && <Loading />}
-            <div className="prose prose-sm mt-4">
-              <ReactMarkdown>
-                {`**Analysis:** ${analysis[idx] || "No analysis yet."}`}
-              </ReactMarkdown>
-            </div>
-          </li>
-        ))}
-      </ul>
+      </main>
     </div>
   );
+
 }
 
 export default Home;
