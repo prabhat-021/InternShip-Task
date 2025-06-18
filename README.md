@@ -9,7 +9,7 @@ WooPlugin LLM Agent is a web application that allows WordPress/WooCommerce devel
 ## Live Demo
 
 - **Frontend**: [https://llmagent.vercel.app/](https://llmagent.vercel.app/)
-- **Backend API**: [https://internship-task-3ccn.onrender.com](https://internship-task-3ccn.onrender.com)
+- **Backend API**: [https://llmagentbackend.vercel.app](https://llmagentbackend.vercel.app)
 
 ## Features Status
 

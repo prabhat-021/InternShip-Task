@@ -30,6 +30,16 @@ exports.savePlugin = async (req, res) => {
     const { prompt, code } = req.body;
 
     try {
+
+        //         const fileName = `woocommerce-custom-plugin-${Date.now()}.php`;
+        //         const filePath = path.join(__dirname, "plugins", fileName);
+
+        //         fs.mkdirSync(path.join(__dirname, "plugins"), { recursive: true });
+
+        //         fs.writeFileSync(filePath, pluginCode);
+
+        //         res.download(filePath, fileName);
+        
         await Plugin.create({ prompt, code });
         res.json({ success: true, message: "Plugin saved successfully." });
     } catch (err) {
