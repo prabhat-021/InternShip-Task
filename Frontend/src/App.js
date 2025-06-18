@@ -7,7 +7,7 @@ function App() {
   return (
     <Router>
       <Navbar />
-      <div className="container" style={{ padding: "0 20px" }}>
+      <div className="pt-0 px-4">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />

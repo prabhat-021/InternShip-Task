@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import CodeEditor from "../components/Editor";
 import axios from "axios";
-import "./Home.css";
 import ReactMarkdown from 'react-markdown';
-import Loading from "../components/Loading.js"
+import Loading from "../components/Loading.js";
 
 function Home() {
-  const backendUrl = "http://localhost:5000";
+  const backendUrl = "https://internship-task-3ccn.onrender.com";
   const [prompt, setPrompt] = useState("");
   const [code, setCode] = useState("");
   const [isGenerated, setIsGenerated] = useState(false);
@@ -16,7 +15,7 @@ function Home() {
     generate: false,
   });
   const [currentPluginId, setCurrentPluginId] = useState(null);
-  const [edit, setEdit] = useState(false);
+  const [edit, setEdit] = useState(false); // Keep this state for tracking edit mode
 
   const getCSRFToken = async () => {
     const res = await axios.get(`${backendUrl}/csrf-token`, { withCredentials: true });
@@ -79,6 +78,7 @@ function Home() {
       }
 
       setCurrentPluginId(null);
+      setEdit(false); // Reset edit mode when generating new code
 
       const csrfToken = await getCSRFToken();
 
@@ -145,6 +145,7 @@ function Home() {
       setIsGenerated(false);
       setCode("");
       setCurrentPluginId(null);
+      setEdit(false); // Reset edit mode after saving
       alert("Plugin saved successfully! You can download it now.");
 
     } catch (err) {
@@ -229,34 +230,44 @@ function Home() {
 
   const handleCloseEditor = () => {
     setCode(null);
-    setEdit(false);
     setPrompt("");
     setCurrentPluginId(null);
+    setEdit(false);
   };
 
   return (
-    <div className="Home">
+    <div className="p-4 w-full mx-auto bg-white rounded-lg shadow-md">
       <input
         type="text"
         placeholder="Enter plugin request"
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
+        className="w-full p-2 mb-4 border border-gray-300 rounded"
       />
       {edit ?
-        <button onClick={handleEditGenerate}>
+        <button 
+          onClick={handleEditGenerate}
+          className="bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded mb-4"
+        >
           Update Plugin Code
         </button> :
-        <button onClick={handleGenerate}>
+        <button 
+          onClick={handleGenerate}
+          className="bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded mb-4"
+        >
           Generate Plugin
         </button>}
       {loading.generate && <Loading />}
 
       {isGenerated && (
         <>
-          <div className="generated-content">
+          <div className="border border-gray-300 rounded p-2 mb-4">
             <CodeEditor code={code} onChange={setCode} />
           </div>
-          <button className="download-button" onClick={handleSaveAndDownload}>
+          <button 
+            className="bg-purple-500 hover:bg-purple-600 text-white py-3 px-6 rounded mb-4" 
+            onClick={handleSaveAndDownload}
+          >
             Save Plugin
           </button>
         </>
@@ -264,39 +275,76 @@ function Home() {
 
       {!isGenerated && code && (
         <>
-          <div className="generated-content">
+          <div className="border border-gray-300 rounded p-2 mb-4">
             <CodeEditor code={code} onChange={setCode} />
           </div>
-          <button className="download-button" onClick={handleCloseEditor}>
+          <button 
+            className="bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded mr-2 mb-4" 
+            onClick={handleCloseEditor}
+          >
             Close Editor
           </button>
-          <button className="download-button" onClick={handleEdit}>
+          <button 
+            className="bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-6 rounded mb-4" 
+            onClick={handleEdit}
+          >
             Update Code
           </button>
         </>
       )}
 
-      <h2>🕘 Plugin History</h2>
-      <ul>
+      <h2 className="text-xl font-bold mt-8 mb-4">🕘 Plugin History</h2>
+      <ul className="space-y-4">
         {pluginHistory.map((plugin, idx) => (
-          <li key={idx} className="plugin_item">
-            <p><strong>Prompt:</strong> {plugin.prompt}</p>
-            <p><strong>Date:</strong> {new Date(plugin.createdAt).toLocaleString()}</p>
-            <button onClick={() => handleLoadPlugin(plugin)}>Load in Editor</button>
-            {analysis[idx] ? <button onClick={() => setAnalysis(analysis[idx] = "")} className="analyze_btn_close">
-              Close Analyze Plugin
-            </button> : <button onClick={() => handleAnalyze(plugin.code, idx)} className="analyze_btn">
-              Analyze Plugin
-            </button>}
-            <button onClick={() => handleDownload(plugin.code)} className="download_btn">
-              Download Plugin
-            </button>
-            <button onClick={() => handleDelete(plugin._id)} className="delete_btn">Delete</button>
-            <button onClick={() => handleRename(plugin._id, plugin.prompt)} className="rename_btn">Rename</button>
+          <li key={idx} className="border border-gray-200 rounded p-4 hover:shadow-md">
+            <p className="mb-2"><strong>Prompt:</strong> {plugin.prompt}</p>
+            <p className="mb-4"><strong>Date:</strong> {new Date(plugin.createdAt).toLocaleString()}</p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <button 
+                onClick={() => handleLoadPlugin(plugin)}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded text-m"
+              >
+                Load in Editor
+              </button>
+              {analysis[idx] ? 
+                <button 
+                  onClick={() => setAnalysis(prev => ({...prev, [idx]: ""}))} 
+                  className="bg-red-500 hover:bg-red-600 text-white py-3 px-6 rounded text-sm"
+                >
+                  Close Analyze Plugin
+                </button> : 
+                <button 
+                  onClick={() => handleAnalyze(plugin.code, idx)} 
+                  className="bg-purple-500 hover:bg-purple-600 text-white py-3 px-6 rounded text-sm"
+                >
+                  Analyze Plugin
+                </button>
+              }
+              <button 
+                onClick={() => handleDownload(plugin.code)} 
+                className="bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded text-sm"
+              >
+                Download Plugin
+              </button>
+              <button 
+                onClick={() => handleDelete(plugin._id)} 
+                className="bg-red-500 hover:bg-red-600 text-white py-3 px-6 rounded text-sm"
+              >
+                Delete
+              </button>
+              <button 
+                onClick={() => handleRename(plugin._id, plugin.prompt)} 
+                className="bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-6 rounded text-sm"
+              >
+                Rename
+              </button>
+            </div>
             {loading[idx] && <Loading />}
-            <ReactMarkdown>
-              {`**Analysis:** ${analysis[idx] || "No analysis yet."}`}
-            </ReactMarkdown>
+            <div className="prose prose-sm mt-4">
+              <ReactMarkdown>
+                {`**Analysis:** ${analysis[idx] || "No analysis yet."}`}
+              </ReactMarkdown>
+            </div>
           </li>
         ))}
       </ul>
