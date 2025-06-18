@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import Loading from "../components/Loading.js";
 
 function Home() {
-  const backendUrl = "https://internship-task-3ccn.onrender.com";
+  const backendUrl = "https://llmagentbackend.vercel.app";
   const [prompt, setPrompt] = useState("");
   const [code, setCode] = useState("");
   const [isGenerated, setIsGenerated] = useState(false);
@@ -22,13 +22,23 @@ function Home() {
     return res.data.csrfToken;
   };
 
-  useEffect(() => {
-    axios.get(`${backendUrl}/plugins/plugin-history`, {
-      headers: { 'csrf-token': getCSRFToken() }, withCredentials: true
-    }).then((res) => {
+useEffect(() => {
+  const fetchPluginHistory = async () => {
+    try {
+      const csrfToken = await getCSRFToken();
+      const res = await axios.get(`${backendUrl}/plugins/plugin-history`, {
+        headers: { 'csrf-token': csrfToken },
+        withCredentials: true,
+      });
       setPluginHistory(res.data.reverse());
-    });
-  }, [isGenerated, loading]);
+    } catch (err) {
+      console.error("Failed to load plugin history:", err);
+    }
+  };
+
+  fetchPluginHistory(); // ✅ Call it
+}, [isGenerated, loading]);
+
 
   const handleDelete = async (id) => {
     try {
@@ -158,7 +168,7 @@ function Home() {
     try {
       const csrfToken = await getCSRFToken();
       setLoading(prev => ({ ...prev, [index]: true }));
-
+      console.log(csrfToken);
       const res = await axios.post(`${backendUrl}/plugins/analyze`, { pluginCode: code },
         {
           headers: { 'csrf-token': csrfToken },

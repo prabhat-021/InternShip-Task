@@ -36,7 +36,7 @@ const allowedOrigins = [
 const corsOptions = {
     origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, origin); 
+            callback(null, origin);
         } else {
             callback(new Error('Not allowed by CORS'));
         }
@@ -49,7 +49,13 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 
-const csrfProtection = csrf({ cookie: true });
+const csrfProtection = csrf({
+    cookie: {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None"
+    }
+});
 app.use(csrfProtection);
 
 app.get("/csrf-token", (req, res) => {
